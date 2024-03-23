@@ -10,6 +10,8 @@ import com.onedayoffer.taskdistribution.repositories.entities.Task;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Sort;
@@ -29,6 +31,7 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final TaskRepository taskRepository;
     private final ModelMapper modelMapper;
+    private final Logger logger = LogManager.getLogger(EmployeeService.class);
 
     public List<EmployeeDTO> getEmployees(@Nullable String sortDirection) {
         List<Employee> employees;
@@ -51,6 +54,7 @@ public class EmployeeService {
             Type listType = new TypeToken<EmployeeDTO>() {}.getType();
             return modelMapper.map(optionalEmployee.get(), listType);
         } else {
+            logger.error(String.format("Не найден сотрудник с id = %s", id));
             throw new NoSuchElementException(String.valueOf(id));
         }
     }
@@ -63,6 +67,7 @@ public class EmployeeService {
             Type listType = new TypeToken<List<TaskDTO>>() {}.getType();
             return modelMapper.map(employee.getTasks(), listType);
         } else {
+            logger.error(String.format("Не найден сотрудник с id = %s", id));
             throw new NoSuchElementException(String.valueOf(id));
         }
     }
@@ -80,9 +85,11 @@ public class EmployeeService {
                 task.setStatus(status);
                 taskRepository.save(task);
             } else {
+                logger.error(String.format("Не найдена задача с id = %s у сотрудника с id = %s", taskId, employeeId));
                 throw new NoSuchElementException(String.valueOf(taskId));
             }
         } else {
+            logger.error(String.format("Не найден сотрудник с id = %s", employeeId));
             throw new NoSuchElementException(String.valueOf(employeeId));
         }
     }
@@ -98,6 +105,7 @@ public class EmployeeService {
             employee.addTask(task);
 
         } else {
+            logger.error(String.format("Не найден сотрудник с id = %s", employeeId));
             throw new NoSuchElementException(String.valueOf(employeeId));
         }
     }
